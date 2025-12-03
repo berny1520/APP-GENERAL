@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Evaluaciones – Operadores</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #d9232d;
+      --primary-soft: #ffe5e7;
+      --dark: #222;
+      --bg: #f2f4f7;
+      --card-bg: #ffffff;
+      --text-main: #222;
+      --text-muted: #777;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+    }
+    header {
+      background: var(--dark);
+      color: #fff;
+      padding: 10px 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    header > div {
+      max-width: 1500px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    header img { height: 55px; }
+    header h1 { margin: 0; font-size: 22px; }
+    header .subtitle {
+      font-size: 13px;
+      color: #ccc;
+      margin-top: 3px;
+    }
+    .container { max-width: 1500px; margin: 15px auto 40px; padding: 0 10px 20px; }
+    .filters-bar {
+      display: flex; flex-wrap: wrap;
+      gap: 10px 15px; align-items: center;
+      background: var(--card-bg);
+      padding: 12px 16px;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom: 18px;
+      font-size: 13px;
+    }
+    .filters-bar .group { display: flex; align-items: center; gap: 6px; }
+    .filters-bar label { font-weight: bold; }
+    .filters-bar input, .filters-bar select {
+      padding: 5px 7px; font-size: 13px;
+      border-radius: 5px; border: 1px solid #d0d4da;
+      min-width: 140px;
+    }
+    .filters-bar button {
+      padding: 6px 11px; font-size: 13px;
+      border-radius: 5px; border: none; cursor: pointer;
+      transition: transform 0.05s ease, box-shadow 0.1s ease;
+    }
+    .filters-bar button:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.2) inset; }
+    .btn-primary   { background: var(--primary); color: #fff; }
+    .btn-secondary { background: #6c757d; color: #fff; }
+    .btn-pdf       { background: #d9534f; color: #fff; }
+    .filters-bar .right { margin-left: auto; display: flex; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 12px;
+      background: var(--card-bg); border-radius: 10px; overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    th, td { padding: 6px 8px; border-bottom: 1px solid #eee; white-space: nowrap; }
+    th { background: #f4f6f8; text-align: left; }
+    tr:nth-child(even) td { background: #fafafa; }
+    tr:hover td { background: #e9f3ff; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <img src="logo_Xtreme.png" alt="Xtreme Mining">
+    <div>
+      <h1>Dashboard Evaluaciones – Operadores</h1>
+      <div class="subtitle">Creado por Bernardo Ojeda Molina – Jefe de Innovación y Formación</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="filters-bar">
+    <div class="group">
+      <label for="filtro-rut">RUT:</label>
+      <input id="filtro-rut" type="text" placeholder="Ej: 12377087-0">
+      <button class="btn-primary" onclick="aplicarFiltros()">Buscar</button>
+    </div>
+    <div class="group">
+      <label for="filtro-equipo">Equipo:</label>
+      <select id="filtro-equipo" onchange="aplicarFiltros()"><option value="TODOS">Todos</option></select>
+    </div>
+    <div class="group">
+      <label for="filtro-contrato">Contrato:</label>
+      <select id="filtro-contrato" onchange="aplicarFiltros()"><option value="TODOS">Todos</option></select>
+    </div>
+    <div class="group">
+      <label for="filtro-instructor">Instructor:</label>
+      <select id="filtro-instructor" onchange="aplicarFiltros()"><option value="TODOS">Todos</option></select>
+    </div>
+    <div class="right">
+      <button class="btn-secondary" onclick="limpiarFiltros()">Limpiar filtros</button>
+      <button class="btn-pdf" onclick="exportarPDF()">Exportar PDF</button>
+    </div>
+  </div>
+
+  <table id="tabla-detalle">
+    <thead>
+      <tr>
+        <th>RUT</th>
+        <th>Nombre</th>
+        <th>Fecha</th>
+        <th>Cargo</th>
+        <th>Equipo</th>
+        <th>Contrato</th>
+        <th>Instructor</th>
+        <th>Total Puntos</th>
+        <th>Nota Final</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+const CSV_URLS = [
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSv2nHTgf2UJjzyxQs0e79UCLz2lRIyGO9AR4y_2p9Nq61lQ0sErMa9IakEDKy_6b4F1V2shvuu3AZQ/pub?gid=0&single=true&output=csv",
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWu_RoFhoxPb3mLa3G8OhapNtWzLoIYMtdVzTJJzBLeEyxsOYtJRmtycgL6kpsE3Pkww3OwQow8baM/pub?gid=764665870&single=true&output=csv"
+];
+
+let registrosBase = [], registrosActuales = [];
+
+document.addEventListener("DOMContentLoaded", cargarDatosMultiples);
+
+async function cargarDatosMultiples() {
+  try {
+    const respuestas = await Promise.all(CSV_URLS.map(u => fetch(u).then(r => r.text())));
+    const datasets = respuestas.map(parseCSV);
+    const todos = datasets.flatMap(mapearDatos);
+    registrosBase = todos;
+    poblarFiltros(registrosBase);
+    aplicarFiltros();
+  } catch (e) {
+    console.error("Error al cargar datos:", e);
+    alert("No se pudieron cargar las hojas de Google.");
+  }
+}
+
+function parseCSV(text) {
+  const rows = [], current = []; let value = "", insideQuotes = false;
+  let cur = [];
+  for (let i=0;i<text.length;i++){const ch=text[i],next=text[i+1];
+    if(insideQuotes){if(ch=='"'&&next=='"'){value+='"';i++;}else if(ch=='"'){insideQuotes=false;}else value+=ch;}
+    else{if(ch=='"'){insideQuotes=true;}else if(ch==","){cur.push(value);value="";}else if(ch=="\n"){cur.push(value);rows.push(cur);cur=[];value="";}else if(ch!="\r"){value+=ch;}}}
+  if(value.length>0||cur.length>0){cur.push(value);rows.push(cur);}return rows;
+}
+
+function mapearDatos(rows){
+  if(!rows.length) return [];
+  const h=rows[0].map(x=>x.trim().toUpperCase());
+  const idx=n=>h.indexOf(n.toUpperCase());
+  const iR=idx("RUT"),iN=idx("NOMBRE"),iF=idx("FECHA"),iC=idx("CARGO"),iE=idx("EQUIPO"),iCT=idx("CONTRATO"),iI=idx("INSTRUCTOR"),iT=idx("TOTALPUNTOS"),iNf=idx("NOTAFINAL");
+  return rows.slice(1).filter(r=>r[iR]&&r[iR].trim()!="").map(r=>({
+    rut:(r[iR]||"").trim(),nombre:(r[iN]||"").trim(),fecha:(r[iF]||"").trim(),cargo:(r[iC]||"").trim(),
+    equipo:(r[iE]||"").trim(),contrato:(r[iCT]||"").trim(),instructor:(r[iI]||"").trim(),
+    totalPuntos:Number((r[iT]||"0").toString().replace(",", "."))||0,notaFinal:Number((r[iNf]||"0").toString().replace(",", "."))||0
+  }));
+}
+
+function poblarFiltros(reg){
+  const selE=document.getElementById("filtro-equipo"),selC=document.getElementById("filtro-contrato"),selI=document.getElementById("filtro-instructor");
+  const fill=(s,v)=>{s.innerHTML='<option value="TODOS">Todos</option>';Array.from(new Set(v.filter(Boolean))).sort().forEach(x=>{const o=document.createElement("option");o.value=x;o.textContent=x;s.appendChild(o);});};
+  fill(selE,reg.map(r=>r.equipo));fill(selC,reg.map(r=>r.contrato));fill(selI,reg.map(r=>r.instructor));
+}
+
+function aplicarFiltros(){
+  if(!registrosBase.length) return;
+  const rut=document.getElementById("filtro-rut").value.trim().toLowerCase();
+  const eq=document.getElementById("filtro-equipo").value;
+  const ct=document.getElementById("filtro-contrato").value;
+  const ins=document.getElementById("filtro-instructor").value;
+  let datos=registrosBase.slice();
+  if(rut) datos=datos.filter(r=>(r.rut||"").toLowerCase().includes(rut));
+  if(eq!=="TODOS") datos=datos.filter(r=>r.equipo===eq);
+  if(ct!=="TODOS") datos=datos.filter(r=>r.contrato===ct);
+  if(ins!=="TODOS") datos=datos.filter(r=>r.instructor===ins);
+  registrosActuales=datos;
+  dibujarTabla(datos);
+}
+
+function limpiarFiltros(){document.getElementById("filtro-rut").value="";["filtro-equipo","filtro-contrato","filtro-instructor"].forEach(id=>document.getElementById(id).value="TODOS");aplicarFiltros();}
+function exportarPDF(){window.print();}
+
+function dibujarTabla(reg){
+  const tb=document.querySelector("#tabla-detalle tbody");tb.innerHTML="";
+  reg.forEach(r=>{const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${r.rut}</td><td>${r.nombre}</td><td>${r.fecha}</td><td>${r.cargo}</td><td>${r.equipo}</td><td>${r.contrato}</td><td>${r.instructor}</td><td>${r.totalPuntos}</td><td>${r.notaFinal}</td>`;
+    tb.appendChild(tr);});
+}
+</script>
+
+</body>
+</html>
