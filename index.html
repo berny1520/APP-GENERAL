@@ -15,8 +15,6 @@
       --text-muted: #777;
     }
 
-    * { box-sizing: border-box; }
-
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
@@ -58,7 +56,7 @@
       padding: 0 10px 20px;
     }
 
-    /* Barra de filtros */
+    /* Filtros */
     .filters-bar {
       display: flex;
       flex-wrap: wrap;
@@ -70,15 +68,6 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
       margin-bottom: 18px;
       font-size: 13px;
-    }
-    .filters-bar .group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .filters-bar label {
-      font-weight: bold;
-      margin-right: 2px;
     }
     .filters-bar input,
     .filters-bar select {
@@ -150,7 +139,7 @@
     /* Gráficos */
     .charts-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 22px;
       margin-top: 10px;
       margin-bottom: 20px;
@@ -177,20 +166,6 @@
       font-weight: 600;
     }
 
-    .chart-card canvas {
-      width: 100% !important;
-      height: calc(100% - 20px) !important;
-    }
-
-    @media (max-width: 950px) {
-      .charts-grid { grid-template-columns: 1fr; }
-      .chart-card,
-      .chart-card.wide {
-        grid-column: 1 / -1;
-        height: 360px;
-      }
-    }
-
     /* Tabla */
     table {
       width: 100%;
@@ -211,23 +186,9 @@
       background: #f4f6f8;
       text-align: left;
     }
+
     tr:nth-child(even) td { background: #fafafa; }
     tr:hover td          { background: #e9f3ff; }
-
-    /* Impresión */
-    @media print {
-      body { background: #fff; }
-      header {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      .filters-bar, button { display: none; }
-      .container {
-        max-width: 100%;
-        margin: 0;
-        padding: 0 5mm;
-      }
-    }
   </style>
 </head>
 <body>
@@ -248,102 +209,41 @@
 
   <!-- Filtros -->
   <div class="filters-bar">
-    <div class="group">
-      <label for="filtro-rut">RUT:</label>
-      <input id="filtro-rut" type="text" placeholder="Ej: 12377087-0">
-      <button class="btn-primary" onclick="aplicarFiltros()">Buscar</button>
-    </div>
-
-    <div class="group">
-      <label for="filtro-equipo">Equipo:</label>
-      <select id="filtro-equipo" onchange="aplicarFiltros()">
-        <option value="TODOS">Todos</option>
-      </select>
-    </div>
-
-    <div class="group">
-      <label for="filtro-contrato">Contrato:</label>
-      <select id="filtro-contrato" onchange="aplicarFiltros()">
-        <option value="TODOS">Todos</option>
-      </select>
-    </div>
-
-    <div class="group">
-      <label for="filtro-instructor">Instructor:</label>
-      <select id="filtro-instructor" onchange="aplicarFiltros()">
-        <option value="TODOS">Todos</option>
-      </select>
-    </div>
-
-    <div class="right">
-      <button class="btn-secondary" onclick="limpiarFiltros()">Limpiar filtros</button>
-      <button class="btn-pdf" onclick="exportarPDF()">Exportar PDF</button>
-    </div>
+    <input id="filtro-rut" placeholder="Ej: 12377087-0">
+    <select id="filtro-equipo"><option value="TODOS">Todos</option></select>
+    <select id="filtro-contrato"><option value="TODOS">Todos</option></select>
+    <select id="filtro-instructor"><option value="TODOS">Todos</option></select>
+    <button class="btn-primary" onclick="aplicarFiltros()">Buscar</button>
+    <button class="btn-secondary" onclick="limpiarFiltros()">Limpiar</button>
+    <button class="btn-pdf" onclick="window.print()">Exportar PDF</button>
   </div>
 
   <!-- KPIs -->
   <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-title">Registros de evaluación</div>
-      <div class="kpi-value" id="kpi-registros">0</div>
-      <div class="kpi-sub">Total de filas con datos</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-title">Operadores únicos</div>
-      <div class="kpi-value" id="kpi-operadores-unicos">0</div>
-      <div class="kpi-sub">Por RUT / Nombre</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-title">Promedio nota final</div>
-      <div class="kpi-value" id="kpi-prom-nota">0.0</div>
-      <div class="kpi-sub">Columna NOTAFINAL</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-title">Promedio total puntos</div>
-      <div class="kpi-value" id="kpi-prom-puntos">0.0</div>
-      <div class="kpi-sub">Columna TOTALPUNTOS</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-title">Equipos distintos</div>
-      <div class="kpi-value" id="kpi-equipos">0</div>
-      <div class="kpi-sub">Cantidad de equipos evaluados</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-title">Contratos distintos</div>
-      <div class="kpi-value" id="kpi-contratos">0</div>
-      <div class="kpi-sub">Cantidad de contratos</div>
-    </div>
+    <div class="kpi-card"><div class="kpi-title">Registros</div><div class="kpi-value" id="kpi-registros">0</div></div>
+    <div class="kpi-card"><div class="kpi-title">Operadores únicos</div><div class="kpi-value" id="kpi-operadores-unicos">0</div></div>
+    <div class="kpi-card"><div class="kpi-title">Promedio Nota</div><div class="kpi-value" id="kpi-prom-nota">0.0</div></div>
+    <div class="kpi-card"><div class="kpi-title">Promedio Puntos</div><div class="kpi-value" id="kpi-prom-puntos">0.0</div></div>
   </div>
 
   <!-- Gráficos -->
   <div class="charts-grid">
     <div class="chart-card wide">
-      <h3>Nota final por operador</h3>
+      <h3>Notas Finales por Operador</h3>
       <canvas id="chartNotaOperador"></canvas>
     </div>
     <div class="chart-card">
-      <h3>Total puntos por operador</h3>
-      <canvas id="chartPuntosOperador"></canvas>
-    </div>
-    <div class="chart-card">
-      <h3>Promedio nota por equipo</h3>
+      <h3>Promedio Nota por Equipo</h3>
       <canvas id="chartNotaEquipo"></canvas>
     </div>
   </div>
 
-  <!-- Tabla detalle -->
+  <!-- Tabla -->
   <table id="tabla-detalle">
     <thead>
       <tr>
-        <th>RUT</th>
-        <th>Nombre</th>
-        <th>Fecha</th>
-        <th>Cargo</th>
-        <th>Equipo</th>
-        <th>Contrato</th>
-        <th>Instructor</th>
-        <th>Total puntos</th>
-        <th>Nota final</th>
+        <th>RUT</th><th>Nombre</th><th>Fecha</th><th>Equipo</th>
+        <th>Contrato</th><th>Instructor</th><th>Total Puntos</th><th>Nota Final</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -351,335 +251,86 @@
 </div>
 
 <script>
-  // URLs CSV de las dos hojas publicadas
-  const CSV_URLS = [
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSv2nHTgf2UJjzyxQs0e79UCLz2lRIyGO9AR4y_2p9Nq61lQ0sErMa9IakEDKy_6b4F1V2shvuu3AZQ/pub?gid=0&single=true&output=csv",
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWu_RoFhoxPb3mLa3G8OhapNtWzLoIYMtdVzTJJzBLeEyxsOYtJRmtycgL6kpsE3Pkww3OwQow8baM/pub?gid=764665870&single=true&output=csv"
-  ];
+const CSV_URLS = [
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSv2nHTgf2UJjzyxQs0e79UCLz2lRIyGO9AR4y_2p9Nq61lQ0sErMa9IakEDKy_6b4F1V2shvuu3AZQ/pub?gid=0&single=true&output=csv",
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWu_RoFhoxPb3mLa3G8OhapNtWzLoIYMtdVzTJJzBLeEyxsOYtJRmtycgL6kpsE3Pkww3OwQow8baM/pub?gid=764665870&single=true&output=csv"
+];
 
-  let registrosBase = [];
-  let registrosActuales = [];
+let registrosBase = [];
+let chartNotaOperador, chartNotaEquipo;
 
-  let chartNotaOperador, chartPuntosOperador, chartNotaEquipo;
+document.addEventListener("DOMContentLoaded", async () => {
+  const textos = await Promise.all(CSV_URLS.map(u => fetch(u).then(r => r.text())));
+  registrosBase = textos.flatMap(t => mapear(parseCSV(t)));
+  poblarFiltros(registrosBase);
+  aplicarFiltros();
+});
 
-  // Estilo global de Chart.js
-  Chart.defaults.maintainAspectRatio = false;
-  Chart.defaults.font.family = "Arial, sans-serif";
-  Chart.defaults.plugins.legend.position = "bottom";
-  Chart.defaults.plugins.legend.labels.usePointStyle = true;
-  Chart.defaults.plugins.legend.labels.pointStyle = "circle";
+function parseCSV(text){return text.trim().split("\\n").map(r=>r.split(","));}
+function mapear(rows){
+  const h=rows[0].map(x=>x.toUpperCase());
+  const idx=n=>h.indexOf(n.toUpperCase());
+  return rows.slice(1).filter(r=>r[idx("RUT")]).map(r=>({
+    rut:r[idx("RUT")],nombre:r[idx("NOMBRE")],fecha:r[idx("FECHA")],
+    equipo:r[idx("EQUIPO")],contrato:r[idx("CONTRATO")],instructor:r[idx("INSTRUCTOR")],
+    totalPuntos:+r[idx("TOTALPUNTOS")],notaFinal:+r[idx("NOTAFINAL")]
+  }));
+}
 
-  document.addEventListener("DOMContentLoaded", () => {
-    cargarDatosMultiples();
+function poblarFiltros(reg){
+  const e=document.getElementById("filtro-equipo"),
+        c=document.getElementById("filtro-contrato"),
+        i=document.getElementById("filtro-instructor");
+  const fill=(s,v)=>{s.innerHTML='<option value="TODOS">Todos</option>';[...new Set(v)].forEach(x=>{if(x){let o=document.createElement("option");o.value=o.textContent=x;s.appendChild(o);}})};
+  fill(e,reg.map(r=>r.equipo));
+  fill(c,reg.map(r=>r.contrato));
+  fill(i,reg.map(r=>r.instructor));
+}
+
+function aplicarFiltros(){
+  const f=document.getElementById("filtro-rut").value.toLowerCase();
+  const e=document.getElementById("filtro-equipo").value;
+  const c=document.getElementById("filtro-contrato").value;
+  const i=document.getElementById("filtro-instructor").value;
+  let d=registrosBase.filter(r=>(!f||r.rut.toLowerCase().includes(f))&&(e==="TODOS"||r.equipo===e)&&(c==="TODOS"||r.contrato===c)&&(i==="TODOS"||r.instructor===i));
+  actualizarKPIs(d);dibujarTabla(d);dibujarGraficos(d);
+}
+
+function limpiarFiltros(){
+  document.getElementById("filtro-rut").value="";
+  ["filtro-equipo","filtro-contrato","filtro-instructor"].forEach(id=>document.getElementById(id).value="TODOS");
+  aplicarFiltros();
+}
+
+function actualizarKPIs(r){
+  document.getElementById("kpi-registros").textContent=r.length;
+  document.getElementById("kpi-operadores-unicos").textContent=new Set(r.map(x=>x.rut)).size;
+  document.getElementById("kpi-prom-nota").textContent=(r.reduce((s,x)=>s+x.notaFinal,0)/r.length||0).toFixed(1);
+  document.getElementById("kpi-prom-puntos").textContent=(r.reduce((s,x)=>s+x.totalPuntos,0)/r.length||0).toFixed(1);
+}
+
+function dibujarTabla(r){
+  const t=document.querySelector("#tabla-detalle tbody");
+  t.innerHTML="";
+  r.forEach(x=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${x.rut}</td><td>${x.nombre}</td><td>${x.fecha}</td><td>${x.equipo}</td><td>${x.contrato}</td><td>${x.instructor}</td><td>${x.totalPuntos}</td><td>${x.notaFinal}</td>`;
+    t.appendChild(tr);
   });
+}
 
-  // Parser CSV con comillas
-  function parseCSV(text) {
-    const rows = [];
-    let current = [];
-    let value = "";
-    let insideQuotes = false;
+function dibujarGraficos(r){
+  if(chartNotaOperador)chartNotaOperador.destroy();
+  if(chartNotaEquipo)chartNotaEquipo.destroy();
 
-    for (let i = 0; i < text.length; i++) {
-      const ch = text[i];
-      const next = text[i + 1];
+  const ctx1=document.getElementById("chartNotaOperador").getContext("2d");
+  chartNotaOperador=new Chart(ctx1,{type:"bar",data:{labels:r.map(x=>x.nombre),datasets:[{label:"Nota Final",data:r.map(x=>x.notaFinal),backgroundColor:"#d9232d77"}]},options:{scales:{y:{beginAtZero:true,max:100}}}});
 
-      if (insideQuotes) {
-        if (ch === '"' && next === '"') {
-          value += '"';
-          i++;
-        } else if (ch === '"') {
-          insideQuotes = false;
-        } else {
-          value += ch;
-        }
-      } else {
-        if (ch === '"') {
-          insideQuotes = true;
-        } else if (ch === ",") {
-          current.push(value);
-          value = "";
-        } else if (ch === "\r") {
-          // nada
-        } else if (ch === "\n") {
-          current.push(value);
-          rows.push(current);
-          current = [];
-          value = "";
-        } else {
-          value += ch;
-        }
-      }
-    }
-    if (value.length > 0 || current.length > 0) {
-      current.push(value);
-      rows.push(current);
-    }
-    return rows;
-  }
-
-  async function cargarDatosMultiples() {
-    try {
-      const textos = await Promise.all(
-        CSV_URLS.map(url => fetch(url).then(r => r.text()))
-      );
-
-      const todosRegistros = textos.flatMap(text => {
-        const rows = parseCSV(text);
-        return mapearDesdeSheet(rows);
-      });
-
-      registrosBase = todosRegistros;
-
-      console.log("Registros combinados cargados:", registrosBase.length);
-
-      poblarFiltros(registrosBase);
-      aplicarFiltros();
-
-    } catch (err) {
-      console.error("Error cargando datos:", err);
-      alert("No se pudieron leer las bases desde Google Sheets.");
-    }
-  }
-
-  function mapearDesdeSheet(rows) {
-    if (!rows.length) return [];
-
-    const headers = rows[0].map(h => h.trim().toUpperCase());
-    const idx = name => headers.indexOf(name.toUpperCase());
-
-    const iRUT        = idx("RUT");
-    const iNOMBRE     = idx("NOMBRE");
-    const iFECHA      = idx("FECHA");
-    const iCARGO      = idx("CARGO");
-    const iEQUIPO     = idx("EQUIPO");
-    const iCONTRATO   = idx("CONTRATO");
-    const iINSTRUCTOR = idx("INSTRUCTOR");
-    const iTOTAL      = idx("TOTALPUNTOS");
-    const iNOTA       = idx("NOTAFINAL");
-
-    if ([iRUT, iNOMBRE, iTOTAL, iNOTA].some(i => i === -1)) {
-      // Esta hoja no tiene todas las columnas mínimas, se ignora
-      console.warn("Hoja ignorada por falta de columnas requeridas.");
-      return [];
-    }
-
-    const dataRows = rows.slice(1).filter(r => r[iRUT] && r[iRUT].trim() !== "");
-
-    return dataRows.map(r => ({
-      rut:        (r[iRUT]        || "").trim(),
-      nombre:     (r[iNOMBRE]     || "").trim(),
-      fecha:      (r[iFECHA]      || "").trim(),
-      cargo:      (r[iCARGO]      || "").trim(),
-      equipo:     (r[iEQUIPO]     || "").trim(),
-      contrato:   (r[iCONTRATO]   || "").trim(),
-      instructor: (r[iINSTRUCTOR] || "").trim(),
-      totalPuntos: Number((r[iTOTAL] || "0").toString().replace(",", ".")) || 0,
-      notaFinal:   Number((r[iNOTA]  || "0").toString().replace(",", ".")) || 0
-    }));
-  }
-
-  function poblarFiltros(reg) {
-    const selEquipo     = document.getElementById("filtro-equipo");
-    const selContrato   = document.getElementById("filtro-contrato");
-    const selInstructor = document.getElementById("filtro-instructor");
-
-    const fillSelect = (select, values) => {
-      select.innerHTML = '<option value="TODOS">Todos</option>';
-      Array.from(new Set(values.filter(v => v))).sort()
-        .forEach(v => {
-          const opt = document.createElement("option");
-          opt.value = v;
-          opt.textContent = v;
-          select.appendChild(opt);
-        });
-    };
-
-    fillSelect(selEquipo,     reg.map(r => r.equipo));
-    fillSelect(selContrato,   reg.map(r => r.contrato));
-    fillSelect(selInstructor, reg.map(r => r.instructor));
-  }
-
-  function aplicarFiltros() {
-    if (!registrosBase.length) return;
-
-    const rutBusqueda = document.getElementById("filtro-rut").value.trim().toLowerCase();
-    const equipoSel   = document.getElementById("filtro-equipo").value;
-    const contratoSel = document.getElementById("filtro-contrato").value;
-    const instrSel    = document.getElementById("filtro-instructor").value;
-
-    let datos = registrosBase.slice();
-
-    if (rutBusqueda) {
-      datos = datos.filter(r =>
-        (r.rut || "").toLowerCase().includes(rutBusqueda)
-      );
-    }
-
-    if (equipoSel !== "TODOS") {
-      datos = datos.filter(r => r.equipo === equipoSel);
-    }
-    if (contratoSel !== "TODOS") {
-      datos = datos.filter(r => r.contrato === contratoSel);
-    }
-    if (instrSel !== "TODOS") {
-      datos = datos.filter(r => r.instructor === instrSel);
-    }
-
-    registrosActuales = datos;
-
-    actualizarKPIs(registrosActuales);
-    dibujarTabla(registrosActuales);
-    dibujarGraficos(registrosActuales);
-  }
-
-  function limpiarFiltros() {
-    document.getElementById("filtro-rut").value = "";
-    document.getElementById("filtro-equipo").value = "TODOS";
-    document.getElementById("filtro-contrato").value = "TODOS";
-    document.getElementById("filtro-instructor").value = "TODOS";
-    aplicarFiltros();
-  }
-
-  function exportarPDF() {
-    window.print();
-  }
-
-  function actualizarKPIs(reg) {
-    const totalReg = reg.length;
-    const totalPuntos = reg.reduce((s, r) => s + (r.totalPuntos || 0), 0);
-    const totalNota   = reg.reduce((s, r) => s + (r.notaFinal   || 0), 0);
-
-    const promPuntos = totalReg ? (totalPuntos / totalReg).toFixed(1) : "0.0";
-    const promNota   = totalReg ? (totalNota   / totalReg).toFixed(1) : "0.0";
-
-    const operadoresUnicos = new Set(reg.map(r => r.rut || r.nombre)).size;
-    const equipos          = new Set(reg.map(r => r.equipo).filter(Boolean)).size;
-    const contratos        = new Set(reg.map(r => r.contrato).filter(Boolean)).size;
-
-    document.getElementById("kpi-registros").textContent         = totalReg;
-    document.getElementById("kpi-operadores-unicos").textContent = operadoresUnicos;
-    document.getElementById("kpi-prom-nota").textContent         = promNota;
-    document.getElementById("kpi-prom-puntos").textContent       = promPuntos;
-    document.getElementById("kpi-equipos").textContent           = equipos;
-    document.getElementById("kpi-contratos").textContent         = contratos;
-  }
-
-  function dibujarTabla(reg) {
-    const tbody = document.querySelector("#tabla-detalle tbody");
-    tbody.innerHTML = "";
-    reg.forEach(r => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${r.rut}</td>
-        <td>${r.nombre}</td>
-        <td>${r.fecha}</td>
-        <td>${r.cargo}</td>
-        <td>${r.equipo}</td>
-        <td>${r.contrato}</td>
-        <td>${r.instructor}</td>
-        <td>${r.totalPuntos}</td>
-        <td>${r.notaFinal}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function agruparPromedio(reg, claveGrupo, claveValor) {
-    const map = {};
-    reg.forEach(r => {
-      const g = r[claveGrupo] || "Sin dato";
-      const v = Number(r[claveValor]) || 0;
-      if (!map[g]) map[g] = { suma: 0, n: 0 };
-      map[g].suma += v;
-      map[g].n += 1;
-    });
-    const labels = Object.keys(map);
-    const values = labels.map(l => map[l].n ? map[l].suma / map[l].n : 0);
-    return { labels, values };
-  }
-
-  function dibujarGraficos(reg) {
-    const labelsOperador = reg.map(r => r.nombre || r.rut);
-    const notasOperador  = reg.map(r => r.notaFinal || 0);
-    const puntosOperador = reg.map(r => r.totalPuntos || 0);
-    const notaPorEquipo  = agruparPromedio(reg, "equipo", "notaFinal");
-
-    const ctxNotaOp   = document.getElementById("chartNotaOperador").getContext("2d");
-    const ctxPtosOp   = document.getElementById("chartPuntosOperador").getContext("2d");
-    const ctxNotaEq   = document.getElementById("chartNotaEquipo").getContext("2d");
-
-    if (chartNotaOperador)   chartNotaOperador.destroy();
-    if (chartPuntosOperador) chartPuntosOperador.destroy();
-    if (chartNotaEquipo)     chartNotaEquipo.destroy();
-
-    const palette = {
-      red: "#d9232d",
-      redSoft: "#ffd6da",
-      blue: "#3498db",
-      blueSoft: "#d6e9f8",
-      green: "#2ecc71",
-      greenSoft: "#d5f5e3"
-    };
-
-    chartNotaOperador = new Chart(ctxNotaOp, {
-      type: "bar",
-      data: {
-        labels: labelsOperador,
-        datasets: [{
-          label: "Nota final",
-          data: notasOperador,
-          backgroundColor: palette.blueSoft,
-          borderColor: palette.blue,
-          borderWidth: 2
-        }]
-      },
-      options: {
-        scales: {
-          y: { beginAtZero: true, max: 100, ticks: { precision: 0 } }
-        }
-      }
-    });
-
-    chartPuntosOperador = new Chart(ctxPtosOp, {
-      type: "bar",
-      data: {
-        labels: labelsOperador,
-        datasets: [{
-          label: "Total puntos",
-          data: puntosOperador,
-          backgroundColor: palette.redSoft,
-          borderColor: palette.red,
-          borderWidth: 2
-        }]
-      },
-      options: {
-        scales: {
-          y: { beginAtZero: true, ticks: { precision: 0 } }
-        }
-      }
-    });
-
-    chartNotaEquipo = new Chart(ctxNotaEq, {
-      type: "bar",
-      data: {
-        labels: notaPorEquipo.labels,
-        datasets: [{
-          label: "Promedio nota",
-          data: notaPorEquipo.values,
-          backgroundColor: palette.greenSoft,
-          borderColor: palette.green,
-          borderWidth: 2
-        }]
-      },
-      options: {
-        scales: {
-          y: { beginAtZero: true, max: 100, ticks: { precision: 0 } }
-        }
-      }
-    });
-  }
+  const ctx2=document.getElementById("chartNotaEquipo").getContext("2d");
+  const porEq={};
+  r.forEach(x=>{if(!porEq[x.equipo])porEq[x.equipo]=[];porEq[x.equipo].push(x.notaFinal);});
+  chartNotaEquipo=new Chart(ctx2,{type:"bar",data:{labels:Object.keys(porEq),datasets:[{label:"Promedio Nota",data:Object.values(porEq).map(a=>a.reduce((s,v)=>s+v,0)/a.length),backgroundColor:"#3498db77"}]},options:{scales:{y:{beginAtZero:true,max:100}}}});
+}
 </script>
-
 </body>
 </html>
