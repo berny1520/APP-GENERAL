@@ -78,6 +78,18 @@
       font-size:13px;
     }
 
+    
+    .chart-box{
+      height: 320px;
+      width: 100%;
+      position: relative;
+    }
+    .chart-box canvas{
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+
     @media (max-width: 1200px){
       .grid-kpis { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
       .grid-charts { grid-template-columns: 1fr; }
@@ -118,6 +130,8 @@
 
     <button class="btn btn-secondary" onclick="limpiarFiltros()">Limpiar filtros</button>
     <button class="btn btn-success" onclick="exportarPDF()">Exportar PDF</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('csvFiles').click()">Cargar CSV local</button>
+    <input id="csvFiles" type="file" accept=".csv,text/csv" multiple style="display:none" onchange="cargarCSVsLocales(this.files)" />
   </div>
 
   <div id="notice" class="notice"></div>
@@ -158,18 +172,24 @@
   <div class="grid-charts">
     <div class="card">
       <h3>Nota final por operador (Top 20)</h3>
-      <canvas id="chartNotaOperador"></canvas>
+      <div class="chart-box">
+        <canvas id="chartNotaOperador"></canvas>
+      </div>
     </div>
     <div class="card">
       <h3>Promedio nota por equipo</h3>
-      <canvas id="chartPromEquipo"></canvas>
+      <div class="chart-box">
+        <canvas id="chartPromEquipo"></canvas>
+      </div>
     </div>
   </div>
 
   <div class="grid-bottom">
     <div class="card">
       <h3>Total puntos por operador (Top 20)</h3>
-      <canvas id="chartPuntosOperador"></canvas>
+      <div class="chart-box">
+        <canvas id="chartPuntosOperador"></canvas>
+      </div>
     </div>
     <div class="card">
       <h3>Detalle de registros</h3>
@@ -224,9 +244,8 @@
    *  Google Sheets → Archivo → Publicar en la web → CSV → copiar link.
    ******************************************************************/
   const CSV_URLS = [
-    // EJEMPLO (cámbialo por los tuyos):
-    // "https://docs.google.com/spreadsheets/d/e/2PACX-1vSv2nHTgf2UJjzyxQs0e79UCLz2lRIyGO9AR4y_2p9Nq61lQ0sErMa9IakEDKy_6b4F1V2shvuu3AZQ/pub?gid=0&single=true&output=csv",
-    // "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWu_RoFhoxPb3mLa3G8OhapNtWzLoIYMtdVzTJJzBLeEyxsOYtJRmtycgL6kpsE3Pkww3OwQow8baM/pub?gid=0&single=true&output=csv"
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSv2nHTgf2UJjzyxQs0e79UCLz2lRIyGO9AR4y_2p9Nq61lQ0sErMa9IakEDKy_6b4F1V2shvuu3AZQ/pub?gid=0&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWu_RoFhoxPb3mLa3G8OhapNtWzLoIYMtdVzTJJzBLeEyxsOYtJRmtycgL6kpsE3Pkww3OwQow8baM/pub?gid=764665870&single=true&output=csv",
   ];
 
   // Estado global
@@ -426,7 +445,7 @@
 
     } catch (err) {
       console.error("Error cargando datos:", err);
-      showNotice("Error al leer las bases. Revisa F12 → Console (posible link inválido o permisos).");
+      showNotice("Error al leer las bases (probable CORS/permisos). Si abriste el archivo como file://, prueba abrirlo con un servidor local (http://localhost) o usa el botón \"Cargar CSV local\".");
     }
   }
 
@@ -535,8 +554,12 @@
       type: "bar",
       data: { labels: labelsOper, datasets: [{ label: "Nota final", data: notasOper }] },
       options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        resizeDelay: 200,
         plugins:{ legend:{ display:true } },
-        scales:{ y:{ beginAtZero:true, max:100 } }
+        scales:{ x:{ ticks:{ autoSkip:true, maxRotation:45, minRotation:0 } }, y:{ beginAtZero:true, max:100 } }
       }
     });
 
@@ -544,8 +567,12 @@
       type: "bar",
       data: { labels: labelsOper, datasets: [{ label: "Total puntos", data: puntosOper }] },
       options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        resizeDelay: 200,
         plugins:{ legend:{ display:true } },
-        scales:{ y:{ beginAtZero:true } }
+        scales:{ x:{ ticks:{ autoSkip:true, maxRotation:45, minRotation:0 } }, y:{ beginAtZero:true } }
       }
     });
 
@@ -553,8 +580,12 @@
       type: "bar",
       data: { labels: equipos, datasets: [{ label: "Promedio nota", data: promEquipo }] },
       options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        resizeDelay: 200,
         plugins:{ legend:{ display:true } },
-        scales:{ y:{ beginAtZero:true, max:100 } }
+        scales:{ x:{ ticks:{ autoSkip:true, maxRotation:45, minRotation:0 } }, y:{ beginAtZero:true, max:100 } }
       }
     });
   }
@@ -637,6 +668,39 @@
     });
 
     doc.save("dashboard_evaluaciones.pdf");
+  }
+
+
+  async function cargarCSVsLocales(fileList){
+    try{
+      hideNotice();
+      if(!fileList || !fileList.length){
+        showNotice("No seleccionaste archivos CSV.");
+        return;
+      }
+      const files = Array.from(fileList);
+      let todos = [];
+      for (let i=0;i<files.length;i++){
+        const f = files[i];
+        const txt = await f.text();
+        const rows = parseCSV(txt);
+        const mapped = mapearDesdeSheet(rows, { source: f.name || `CSV ${i+1}` });
+        console.log("CSV local", { archivo: f.name, filasCSV: rows.length, registrosMapeados: mapped.length });
+        todos = todos.concat(mapped);
+      }
+      registrosBase = todos;
+      console.log("Registros combinados (local) cargados:", registrosBase.length);
+      if (!registrosBase.length) {
+        showNotice("Cargó 0 registros desde CSV local. Revisa que existan columnas mínimas (RUT, NOMBRE, TOTALPUNTOS/TOTAL PUNTOS, NOTAFINAL/NOTA FINAL).");
+      } else {
+        hideNotice();
+      }
+      poblarFiltros(registrosBase);
+      aplicarFiltros();
+    } catch(err){
+      console.error("Error leyendo CSV local:", err);
+      showNotice("No pude leer tus CSV locales. Abre F12 → Console para ver el error.");
+    }
   }
 
   // Arranque
