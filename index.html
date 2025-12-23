@@ -41,7 +41,7 @@
     .btn-success { background:#16a34a; color:white; }
 
     .grid-kpis {
-      display:grid; grid-template-columns: repeat(6, minmax(160px, 1fr));
+      display:grid; grid-template-columns: repeat(8, minmax(160px, 1fr));
       gap:10px; margin-top:12px;
     }
     .kpi {
@@ -53,9 +53,22 @@
     .kpi .value { font-size:20px; font-weight:800; margin-top:6px; color:#111827; }
     .kpi .sub { font-size:11px; color:#6b7280; margin-top:4px; }
 
+    .kpi.good { border-left-color:#16a34a; }
+    .kpi.mid  { border-left-color:#f59e0b; }
+    .kpi.bad  { border-left-color:#ef4444; }
+
+    .kpi.good .value{ color:#16a34a; }
+    .kpi.mid  .value{ color:#b45309; }
+    .kpi.bad  .value{ color:#b91c1c; }
+
+    .kpi.soft-good{ background:#f0fdf4; }
+    .kpi.soft-mid{ background:#fffbeb; }
+    .kpi.soft-bad{ background:#fff1f2; }
+
+
     .grid-charts {
       margin-top:12px;
-      display:grid; grid-template-columns: 2fr 1fr;
+      display:grid; grid-template-columns: repeat(3, 1fr);
       gap:10px;
     }
     .card {
@@ -64,7 +77,7 @@
     }
     .card h3 { margin:0 0 10px 0; font-size:14px; color:#111827; }
     .grid-bottom {
-      margin-top:10px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;
+      margin-top:10px; display:grid; grid-template-columns: 1fr; gap:10px;
     }
 
     table { width:100%; border-collapse:collapse; }
@@ -91,7 +104,7 @@
 
 
     @media (max-width: 1200px){
-      .grid-kpis { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+      .grid-kpis { grid-template-columns: repeat(4, minmax(160px, 1fr)); }
       .grid-charts { grid-template-columns: 1fr; }
       .grid-bottom { grid-template-columns: 1fr; }
     }
@@ -101,8 +114,9 @@
 <body>
 <header>
   <div class="brand">
-    <div style="width:42px;height:42px;border-radius:8px;background:#fff;color:#111827;display:flex;align-items:center;justify-content:center;font-weight:900;">
-      X
+    <div style="width:48px;height:48px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <img id="logoEmpresa" src="logo_empresa.png" alt="Logo empresa" style="width:100%;height:100%;object-fit:contain;" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex';" />
+      <div id="logoFallback" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;color:#111827;font-weight:900;">LOGO</div>
     </div>
     <div>
       Dashboard Evaluaciones – Operadores
@@ -147,6 +161,18 @@
       <div class="value" id="kpiOperadores">0</div>
       <div class="sub">Por RUT / Nombre</div>
     </div>
+
+    <div class="kpi" id="kpiCardEvalEquipo">
+      <div class="label">Operadores evaluados (filtro)</div>
+      <div class="value" id="kpiEvalEquipo">0</div>
+      <div class="sub">Únicos según filtros (RUT)</div>
+    </div>
+    <div class="kpi" id="kpiCardAvance">
+      <div class="label">Avance dotación</div>
+      <div class="value" id="kpiAvance">0%</div>
+      <div class="sub">Sobre dotación total 108</div>
+    </div>
+
     <div class="kpi">
       <div class="label">Promedio nota final</div>
       <div class="value" id="kpiPromNota">0</div>
@@ -184,7 +210,7 @@
     </div>
   </div>
 
-  <div class="grid-bottom">
+    <div class="grid-bottom">
     <div class="card">
       <h3>Total puntos por operador (Top 20)</h3>
       <div class="chart-box">
@@ -243,9 +269,13 @@
    *  Cómo obtenerlos:
    *  Google Sheets → Archivo → Publicar en la web → CSV → copiar link.
    ******************************************************************/
+  const DOTACION_TOTAL = 108;
+
   const CSV_URLS = [
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vSv2nHTgf2UJjzyxQs0e79UCLz2lRIyGO9AR4y_2p9Nq61lQ0sErMa9IakEDKy_6b4F1V2shvuu3AZQ/pub?gid=0&single=true&output=csv",
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWu_RoFhoxPb3mLa3G8OhapNtWzLoIYMtdVzTJJzBLeEyxsOYtJRmtycgL6kpsE3Pkww3OwQow8baM/pub?gid=764665870&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWu_RoFhoxPb3mLa3G8OhapNtWzLoIYMtdVzTJJzBLeEyxsOYtJRmtycgL6kpsE3Pkww3OwQow8baM/pub?gid=0&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWu_RoFhoxPb3mLa3G8OhapNtWzLoIYMtdVzTJJzBLeEyxsOYtJRmtycgL6kpsE3Pkww3OwQow8baM/pub?gid=679076850&single=true&output=csv",
   ];
 
   // Estado global
@@ -511,6 +541,31 @@
 
     const uniqOp = new Set(reg.map(r => (r.rut || "") + "|" + (r.nombre || "")));
     document.getElementById("kpiOperadores").textContent = uniqOp.size.toString();
+
+    // Nuevos KPIs: operadores evaluados según filtro + avance sobre dotación total
+    const evaluados = uniqOp.size;
+    document.getElementById("kpiEvalEquipo").textContent = evaluados.toString();
+
+    const pct = DOTACION_TOTAL ? (evaluados / DOTACION_TOTAL) * 100 : 0;
+    document.getElementById("kpiAvance").textContent = `${pct.toFixed(1)}%`;
+
+    // Cambia color de tarjetas según avance
+    const cardEval = document.getElementById("kpiCardEvalEquipo");
+    const cardAv = document.getElementById("kpiCardAvance");
+
+    const setClass = (el, level) => {
+      el.classList.remove("good","mid","bad","soft-good","soft-mid","soft-bad");
+      if(level === "good"){ el.classList.add("good","soft-good"); }
+      else if(level === "mid"){ el.classList.add("mid","soft-mid"); }
+      else { el.classList.add("bad","soft-bad"); }
+    };
+
+    let level = "bad";
+    if (pct >= 80) level = "good";
+    else if (pct >= 50) level = "mid";
+
+    setClass(cardEval, level);
+    setClass(cardAv, level);
 
     const avg = (arr) => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
 
