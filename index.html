@@ -41,7 +41,7 @@
     .btn-success { background:#16a34a; color:white; }
 
     .grid-kpis {
-      display:grid; grid-template-columns: repeat(8, minmax(160px, 1fr));
+      display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
       gap:10px; margin-top:12px;
     }
     .kpi {
@@ -68,7 +68,7 @@
 
     .grid-charts {
       margin-top:12px;
-      display:grid; grid-template-columns: repeat(3, 1fr);
+      display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap:10px;
     }
     .card {
@@ -115,7 +115,7 @@
 <header>
   <div class="brand">
     <div style="width:48px;height:48px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-      <img id="logoEmpresa" src="logo_empresa.png" alt="Logo empresa" style="width:100%;height:100%;object-fit:contain;" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex';" />
+      <img id="logoEmpresa" src="logo_Xtreme.png" alt="Logo empresa" style="width:100%;height:100%;object-fit:contain;" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex';" />
       <div id="logoFallback" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;color:#111827;font-weight:900;">LOGO</div>
     </div>
     <div>
@@ -124,6 +124,12 @@
     </div>
   </div>
 </header>
+<div style="max-width:1400px;margin:10px auto 0 auto;padding:0 16px;">
+  <div id="helperTop" class="notice" style="display:block;">
+    Si no ves el logo: sube un archivo llamado <b>logo_Xtreme.png</b> en la misma carpeta del HTML (o al repo junto al HTML) y recarga con <b>Ctrl+F5</b>. 
+    Si no ves las tarjetas nuevas, confirma que abriste este archivo y busca “Avance dotación”.
+  </div>
+</div>
 
 <div class="container">
 
@@ -274,8 +280,6 @@
   const CSV_URLS = [
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vSv2nHTgf2UJjzyxQs0e79UCLz2lRIyGO9AR4y_2p9Nq61lQ0sErMa9IakEDKy_6b4F1V2shvuu3AZQ/pub?gid=0&single=true&output=csv",
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWu_RoFhoxPb3mLa3G8OhapNtWzLoIYMtdVzTJJzBLeEyxsOYtJRmtycgL6kpsE3Pkww3OwQow8baM/pub?gid=764665870&single=true&output=csv",
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWu_RoFhoxPb3mLa3G8OhapNtWzLoIYMtdVzTJJzBLeEyxsOYtJRmtycgL6kpsE3Pkww3OwQow8baM/pub?gid=0&single=true&output=csv",
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWu_RoFhoxPb3mLa3G8OhapNtWzLoIYMtdVzTJJzBLeEyxsOYtJRmtycgL6kpsE3Pkww3OwQow8baM/pub?gid=679076850&single=true&output=csv",
   ];
 
   // Estado global
